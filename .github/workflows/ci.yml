@@ -21,6 +21,9 @@ jobs:
           bash -n install.sh
           for f in tests/smoke.sh shims/*; do sh -n "$f"; done
 
+      - name: Offline doctor regression tests
+        run: python3 -m unittest discover -s tests -p test_doctor.py -v
+
       - name: System packages (Linux)
         if: runner.os == 'Linux'
         run: |
@@ -38,7 +41,9 @@ jobs:
         run: ./install.sh --no-system --exclude libreoffice
 
       - name: Doctor
-        run: ~/.unienv/bin/unienv doctor --json | tee doctor.json
+        run: |
+          ~/.unienv/bin/unienv doctor --json | tee doctor.json
+          ~/.unienv/bin/unienv doctor --json --fix | python3 -m json.tool > doctor-fixed.json
 
       - name: Smoke test from a fresh non-interactive shell
         run: env -i HOME="$HOME" USER="$USER" PATH=/usr/bin:/bin bash -lc tests/smoke.sh
